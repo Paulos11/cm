@@ -1,85 +1,78 @@
-// src/components/MembersTable.jsx
 import React from "react";
-import { FilePenIcon, TrashIcon } from "../ui/icons";
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Flex,
+  IconButton,
+  HStack,
+  Avatar,
+  Text,
+} from "@chakra-ui/react";
+import { FaEdit, FaTrash, FaEye } from "react-icons/fa";
 
 const MembersTable = ({
   members,
-  editMemberId,
-  editMember,
-  setEditMember,
-  handleEditClick,
-  handleDeleteClick,
-  handleUpdateMember,
+  handleEdit,
+  handleDelete,
+  handleView,
 }) => {
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditMember((prevMember) => ({ ...prevMember, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    setEditMember((prevMember) => ({ ...prevMember, [name]: files[0] }));
-  };
+  console.log('MembersTable received members:', members);
 
   return (
-    <table className="min-w-full bg-white border-collapse">
-      <thead>
-        <tr>
-          <th className="py-2 px-4 text-left">Image</th>
-          <th className="py-2 px-4 text-left">Name</th>
-          <th className="py-2 px-4 text-left">Email</th>
-          <th className="py-2 px-4 text-left">Phone</th>
-          <th className="py-2 px-4 text-left">Address</th>
-          <th className="py-2 px-4 text-left">Date of Birth</th>
-          <th className="py-2 px-4 text-left">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
+    <Table variant="simple">
+      <Thead>
+        <Tr>
+          <Th>Member</Th>
+          <Th>Email</Th>
+          <Th>Phone</Th>
+          <Th>Date of Birth</Th>
+          <Th>Actions</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
         {members.map((member) => (
-          <tr key={member._id} className="border-t hover:bg-gray-50">
-            <td className="py-2 px-4 text-left">
-              {member.image && (
-                <img
-                  src={`http://localhost:5009/${member.image.replace(
-                    /\\/g,
-                    "/"
-                  )}`}
-                  alt={member.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/path/to/default/image.jpg";
-                  }}
+          <Tr key={member._id}>
+            <Td>
+              <Flex align="center">
+                <Avatar src={`http://localhost:5009/${member.image}`} name={member.name} size="sm" mr={2} />
+                <Text fontWeight="medium">{member.name}</Text>
+              </Flex>
+            </Td>
+            <Td>{member.email}</Td>
+            <Td>{member.phone}</Td>
+            <Td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</Td>
+            <Td>
+              <HStack spacing={2}>
+                <IconButton
+                  icon={<FaEdit />}
+                  aria-label="Edit"
+                  size="sm"
+                  onClick={() => handleEdit(member)}
                 />
-              )}
-            </td>
-            <td className="py-2 px-4 text-left">{member.name}</td>
-            <td className="py-2 px-4 text-left">{member.email}</td>
-            <td className="py-2 px-4 text-left">{member.phone}</td>
-            <td className="py-2 px-4 text-left">{member.address}</td>
-            <td className="py-2 px-4 text-left">
-              {new Date(member.dateOfBirth).toLocaleDateString()}
-            </td>
-            <td className="py-2 px-4 text-left flex items-center gap-2">
-              <>
-                <button
-                  onClick={() => handleEditClick(member)}
-                  className="text-gray-800 flex items-center"
-                >
-                  <FilePenIcon className="ml-2 w-4 h-4 text-xs" />
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(member._id)}
-                  className="text-red-600 flex items-center"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </>
-            </td>
-          </tr>
+                <IconButton
+                  icon={<FaTrash />}
+                  aria-label="Delete"
+                  size="sm"
+                  colorScheme="red"
+                  onClick={() => handleDelete(member._id)}
+                />
+                <IconButton
+                  icon={<FaEye />}
+                  aria-label="View"
+                  size="sm"
+                  colorScheme="blue"
+                  onClick={() => handleView(member)}
+                />
+              </HStack>
+            </Td>
+          </Tr>
         ))}
-      </tbody>
-    </table>
+      </Tbody>
+    </Table>
   );
 };
 

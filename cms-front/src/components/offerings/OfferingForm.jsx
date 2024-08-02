@@ -1,120 +1,78 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import {
+  VStack,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
+  Textarea,
+  Button,
+} from "@chakra-ui/react";
 
-const OfferingForm = ({
-  members,
-  offering,
-  setOffering,
-  handleSubmit,
-  isEditMode,
-}) => {
-  const [defaultDate, setDefaultDate] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toISOString().split("T")[0];
-    setDefaultDate(formattedDate);
-    if (!offering.date) {
-      setOffering((prevOffering) => ({ ...prevOffering, date: formattedDate }));
-    }
-  }, [offering.date, setOffering]);
+const OfferingForm = ({ members, offering, handleSubmit, isEditMode }) => {
+  const [formData, setFormData] = React.useState(offering || {
+    amount: "",
+    member: "",
+    date: new Date().toISOString().split('T')[0],
+    details: "",
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === "amount") {
-      const numericValue = value.replace(/,/g, "");
-      if (/[^0-9.]/.test(numericValue)) {
-        setErrorMessage("Amount should only contain numbers.");
-      } else {
-        setErrorMessage("");
-        setOffering((prevOffering) => ({
-          ...prevOffering,
-          [name]: numericValue,
-        }));
-      }
-    } else {
-      setOffering((prevOffering) => ({ ...prevOffering, [name]: value }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    handleSubmit({
-      ...offering,
-      amount: parseFloat(offering.amount.replace(/,/g, "")),
-    });
+    handleSubmit(formData);
   };
 
   return (
-    <form
-      onSubmit={handleFormSubmit}
-      className="bg-white p-6 shadow rounded-md"
-    >
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Amount
-        </label>
-        <input
-          type="text"
-          name="amount"
-          placeholder="Amount"
-          value={offering.amount}
-          onChange={handleInputChange}
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3"
-        />
-        {errorMessage && (
-          <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
-        )}
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Member
-        </label>
-        <select
-          name="member"
-          value={offering.member}
-          onChange={handleInputChange}
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3"
-        >
-          <option value="">Select Member</option>
-          {members.map((member) => (
-            <option key={member._id} value={member._id}>
-              {member.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Date</label>
-        <input
-          type="date"
-          name="date"
-          value={offering.date || defaultDate}
-          onChange={handleInputChange}
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3"
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Details
-        </label>
-        <textarea
-          name="details"
-          placeholder="Details"
-          value={offering.details}
-          onChange={handleInputChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3"
-        ></textarea>
-      </div>
-      <button
-        type="submit"
-        className="w-full bg-green-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-600 transition duration-200"
-      >
-        {isEditMode ? "Update Offering" : "Add Offering"}
-      </button>
+    <form onSubmit={onSubmit}>
+      <VStack spacing={4}>
+        <FormControl isRequired>
+          <FormLabel>Amount</FormLabel>
+          <Input
+            type="number"
+            name="amount"
+            value={formData.amount}
+            onChange={handleInputChange}
+          />
+        </FormControl>
+        <FormControl isRequired>
+          <FormLabel>Member</FormLabel>
+          <Select
+            name="member"
+            value={formData.member}
+            onChange={handleInputChange}
+          >
+            <option value="">Select a member</option>
+            {members.map(member => (
+              <option key={member._id} value={member._id}>{member.name}</option>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl isRequired>
+          <FormLabel>Date</FormLabel>
+          <Input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleInputChange}
+          />
+        </FormControl>
+        <FormControl>
+          <FormLabel>Details</FormLabel>
+          <Textarea
+            name="details"
+            value={formData.details}
+            onChange={handleInputChange}
+          />
+        </FormControl>
+        <Button type="submit" colorScheme="blue" width="full">
+          {isEditMode ? "Update Offering" : "Add Offering"}
+        </Button>
+      </VStack>
     </form>
   );
 };

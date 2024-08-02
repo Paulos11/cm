@@ -1,167 +1,148 @@
-// src/store/membersSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../utils/axiosSetup";
 
-const handleFormData = (member) => {
-  const formData = new FormData();
-  for (const key in member) {
-    formData.append(key, member[key]);
-  }
-  return formData;
-};
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const fetchMembers = createAsyncThunk(
   "members/fetchMembers",
-  async ({ page, limit }) => {
-    const response = await axios.get(
-      `http://localhost:5009/api/cms/members?page=${page}&limit=${limit}`
-    );
-    return response.data;
+  async ({ page = 1, limit = 20 } = {}, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/cms/members?page=${page}&limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
   }
 );
 
 export const fetchAllMembers = createAsyncThunk(
   "members/fetchAllMembers",
-  async () => {
-    const response = await axios.get(
-      "http://localhost:5009/api/cms/members?all=true"
-    );
-    return response.data;
+  async (_, { rejectWithValue }) => {
+    let attempts = 0;
+    const maxAttempts = 5;
+    const baseDelay = 1000;
+
+    while (attempts < maxAttempts) {
+      try {
+        const response = await axios.get("/cms/members?all=true");
+        return response.data;
+      } catch (error) {
+        if (error.response && error.response.status === 429) {
+          attempts++;
+          const delayTime = baseDelay * Math.pow(2, attempts);
+          console.error(`Retry attempt ${attempts}, delaying for ${delayTime} ms`);
+          await delay(delayTime);
+        } else {
+          console.error("Error fetching all members:", error);
+          return rejectWithValue(error.response?.data || error.message);
+        }
+      }
+    }
+
+    return rejectWithValue("Max retry attempts reached. Please try again later.");
   }
 );
 
 export const fetchTotalMembers = createAsyncThunk(
   "members/fetchTotalMembers",
-  async () => {
-    const response = await axios.get(
-      "http://localhost:5009/api/cms/totalmembers"
-    );
-    return response.data.totalMembers;
-  }
-);
-
-export const fetchBirthdaysThisMonth = createAsyncThunk(
-  "members/fetchBirthdaysThisMonth",
-  async () => {
-    const response = await axios.get("http://localhost:5009/api/cms/birthdays");
-    return response.data;
-  }
-);
-
-export const fetchNewlyJoinedThisMonth = createAsyncThunk(
-  "members/fetchNewlyJoinedThisMonth",
-  async () => {
-    const response = await axios.get(
-      "http://localhost:5009/api/cms/newlyjoined"
-    );
-    return response.data;
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("/cms/totalmembers");
+      return response.data.total;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
   }
 );
 
 export const addMember = createAsyncThunk(
   "members/addMember",
-  async (member) => {
-    const formData = handleFormData(member);
-    const response = await axios.post(
-      "http://localhost:5009/api/cms/member",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    return response.data;
+  async (memberData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post("/cms/member", memberData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
   }
 );
 
 export const updateMember = createAsyncThunk(
   "members/updateMember",
-  async (member) => {
-    const { id } = member;
-    const formData = handleFormData(member);
-    const response = await axios.put(
-      `http://localhost:5009/api/cms/member/${id}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    return response.data;
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`/cms/member/${id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
   }
 );
 
 export const deleteMember = createAsyncThunk(
   "members/deleteMember",
-  async (id) => {
-    await axios.delete(`http://localhost:5009/api/cms/member/${id}`);
-    return id;
+  async (id, { rejectWithValue }) => {
+    try {
+      await axios.delete(`/cms/member/${id}`);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
   }
 );
 
+const initialState = {
+  members: [],
+  allMembers: [],
+  total: 0,
+  status: 'idle',
+  error: null,
+};
+
 const membersSlice = createSlice({
   name: "members",
-  initialState: {
-    members: [],
-    allMembers: [],
-    total: 0,
-    birthdaysThisMonth: [],
-    newlyJoinedThisMonth: [],
-    status: "idle",
-    error: null,
-    page: 1,
-    limit: 10,
-  },
-  reducers: {
-    setPage(state, action) {
-      state.page = action.payload;
-    },
-  },
+  initialState,
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchMembers.pending, (state) => {
-        state.status = "loading";
+        state.status = 'loading';
       })
       .addCase(fetchMembers.fulfilled, (state, action) => {
-        state.status = "succeeded";
+        state.status = 'succeeded';
         state.members = action.payload.members;
         state.total = action.payload.total;
       })
       .addCase(fetchMembers.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.error.message;
+        state.status = 'failed';
+        state.error = action.payload;
       })
       .addCase(fetchAllMembers.fulfilled, (state, action) => {
-        state.allMembers = action.payload.members;
+        state.allMembers = action.payload;
       })
       .addCase(fetchTotalMembers.fulfilled, (state, action) => {
         state.total = action.payload;
       })
-      .addCase(fetchBirthdaysThisMonth.fulfilled, (state, action) => {
-        state.birthdaysThisMonth = action.payload;
-      })
-      .addCase(fetchNewlyJoinedThisMonth.fulfilled, (state, action) => {
-        state.newlyJoinedThisMonth = action.payload;
-      })
       .addCase(addMember.fulfilled, (state, action) => {
-        state.members.push(action.payload.member);
+        state.members.push(action.payload);
+        state.total += 1;
+      })
+      .addCase(addMember.rejected, (state, action) => {
+        state.error = action.payload;
       })
       .addCase(updateMember.fulfilled, (state, action) => {
-        const index = state.members.findIndex(
-          (member) => member.id === action.payload.id
-        );
-        state.members[index] = action.payload;
+        const index = state.members.findIndex(member => member._id === action.payload._id);
+        if (index !== -1) {
+          state.members[index] = action.payload;
+        }
       })
       .addCase(deleteMember.fulfilled, (state, action) => {
-        state.members = state.members.filter(
-          (member) => member.id !== action.payload
-        );
+        state.members = state.members.filter(member => member._id !== action.payload);
+        state.total -= 1;
       });
   },
 });
-
-export const { setPage } = membersSlice.actions;
 
 export default membersSlice.reducer;

@@ -1,13 +1,12 @@
+// src/features/offerings/offeringsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../utils/axiosSetup";
 
 // Fetch offerings from the backend
 export const fetchOfferings = createAsyncThunk(
   "offerings/fetchOfferings",
   async ({ page, limit }) => {
-    const response = await axios.get(
-      `http://localhost:5009/api/cms/offerings?page=${page}&limit=${limit}`
-    );
+    const response = await axiosInstance.get(`/cms/offerings?page=${page}&limit=${limit}`);
     console.log("Fetched offerings:", response.data);
     return response.data; // Ensure this returns the data as expected
   }
@@ -17,10 +16,7 @@ export const fetchOfferings = createAsyncThunk(
 export const fetchTotalOffering = createAsyncThunk(
   "offerings/fetchTotalOffering",
   async () => {
-    const response = await axios.get(
-      "http://localhost:5009/api/cms/offeringtotal"
-    );
-    console.log("Fetched total offering:", response.data.totalOffering);
+    const response = await axiosInstance.get("/cms/offeringtotal");
     return response.data.totalOffering;
   }
 );
@@ -29,10 +25,7 @@ export const fetchTotalOffering = createAsyncThunk(
 export const addOffering = createAsyncThunk(
   "offerings/addOffering",
   async (offering) => {
-    const response = await axios.post(
-      "http://localhost:5009/api/cms/offering",
-      offering
-    );
+    const response = await axiosInstance.post("/cms/offering", offering);
     console.log("Added offering:", response.data);
     return response.data;
   }
@@ -43,10 +36,7 @@ export const updateOffering = createAsyncThunk(
   "offerings/updateOffering",
   async (offering) => {
     const { id, ...data } = offering;
-    const response = await axios.patch(
-      `http://localhost:5009/api/cms/offering/${id}`,
-      data
-    );
+    const response = await axiosInstance.patch(`/cms/offering/${id}`, data);
     console.log("Updated offering:", response.data);
     return response.data;
   }
@@ -56,7 +46,7 @@ export const updateOffering = createAsyncThunk(
 export const deleteOffering = createAsyncThunk(
   "offerings/deleteOffering",
   async (id) => {
-    await axios.delete(`http://localhost:5009/api/cms/offering/${id}`);
+    await axiosInstance.delete(`/cms/offering/${id}`);
     console.log("Deleted offering:", id);
     return id;
   }

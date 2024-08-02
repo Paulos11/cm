@@ -1,40 +1,49 @@
-// src/store/eventsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-export const fetchEvents = createAsyncThunk("events/fetchEvents", async () => {
-  const response = await axios.get("/api/events");
-  return response.data;
-});
+export const fetchEvents = createAsyncThunk(
+  "events/fetchEvents",
+  async () => {
+    const response = await axios.get("/cms/events");
+    return response.data;
+  }
+);
 
 export const createEvent = createAsyncThunk(
   "events/createEvent",
-  async (event) => {
-    const response = await axios.post("/api/events", event);
-    return response.data;
+  async (event, { rejectWithValue }) => {
+    try {
+      const response = await axios.post("http://localhost:5009/api/cms/events", event); // Corrected endpoint
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
+    }
   }
 );
 
 export const updateEvent = createAsyncThunk(
   "events/updateEvent",
-  async ({ id, event }) => {
-    const response = await axios.put(`/api/events/${id}`, event);
-    return response.data;
+  async ({ id, event }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(`http://localhost:5009/api/cms/events/${id}`, event); // Corrected endpoint
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
+    }
   }
 );
 
 export const deleteEvent = createAsyncThunk(
   "events/deleteEvent",
-  async (id) => {
-    await axios.delete(`/api/events/${id}`);
-    return id;
+  async (id, { rejectWithValue }) => {
+    try {
+      await axios.delete(`http://localhost:5009/api/cms/events/${id}`); // Corrected endpoint
+      return id;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
+    }
   }
 );
-
-export const saveDay = createAsyncThunk("events/saveDay", async (date) => {
-  const response = await axios.post("/api/savedDays", { date });
-  return response.data;
-});
 
 const eventsSlice = createSlice({
   name: "events",
@@ -58,23 +67,42 @@ const eventsSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
+      .addCase(createEvent.pending, (state) => {
+        state.status = "loading";
+      })
       .addCase(createEvent.fulfilled, (state, action) => {
+        state.status = "succeeded";
         state.events.push(action.payload);
       })
+      .addCase(createEvent.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload.message || action.error.message;
+      })
+      .addCase(updateEvent.pending, (state) => {
+        state.status = "loading";
+      })
       .addCase(updateEvent.fulfilled, (state, action) => {
-        const { id, event } = action.payload;
-        const existingEvent = state.events.find((event) => event._id === id);
+        state.status = "succeeded";
+        const updatedEvent = action.payload;
+        const existingEvent = state.events.find((event) => event._id === updatedEvent._id);
         if (existingEvent) {
-          Object.assign(existingEvent, event);
+          Object.assign(existingEvent, updatedEvent);
         }
       })
-      .addCase(deleteEvent.fulfilled, (state, action) => {
-        state.events = state.events.filter(
-          (event) => event._id !== action.payload
-        );
+      .addCase(updateEvent.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload.message || action.error.message;
       })
-      .addCase(saveDay.fulfilled, (state, action) => {
-        state.savedDays.push(action.payload);
+      .addCase(deleteEvent.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(deleteEvent.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.events = state.events.filter((event) => event._id !== action.payload);
+      })
+      .addCase(deleteEvent.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload.message || action.error.message;
       });
   },
 });

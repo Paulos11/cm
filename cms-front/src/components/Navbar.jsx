@@ -1,79 +1,102 @@
 import React from "react";
 import {
-  UsersIcon,
-  DollarSignIcon,
-  ReceiptIcon,
-  BookOpenIcon,
-  CalendarIcon,
-} from "./ui/icons";
+  Box,
+  Flex,
+  VStack,
+  Text,
+  Icon,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
+import {
+  FaTachometerAlt,
+  FaUsers,
+  FaMoneyBillWave,
+  FaReceipt,
+  FaBook,
+  FaCalendarAlt,
+} from "react-icons/fa";
+
+const NavItem = ({ icon, children, to }) => {
+  return (
+    <NavLink
+      to={to}
+      style={({ isActive }) => ({
+        backgroundColor: isActive ? "rgba(255, 255, 255, 0.1)" : "transparent",
+      })}
+    >
+      <Flex
+        align="center"
+        p="4"
+        mx="4"
+        borderRadius="lg"
+        role="group"
+        cursor="pointer"
+        _hover={{
+          bg: "cyan.400",
+          color: "white",
+        }}
+      >
+        {icon && (
+          <Icon
+            mr="4"
+            fontSize="16"
+            _groupHover={{
+              color: "white",
+            }}
+            as={icon}
+          />
+        )}
+        {children}
+      </Flex>
+    </NavLink>
+  );
+};
 
 const Navbar = () => {
+  const bg = useColorModeValue("gray.100", "gray.900");
+  const color = useColorModeValue("gray.600", "gray.200");
+
   return (
-    <div className="fixed top-0 left-0 h-full bg-gray-800 text-white w-[250px] z-20">
-      <div className="flex flex-col items-center bg-gray-800 p-6 text-gray-50 text-[18px]">
-        <NavLink to="/admin" className="flex items-center gap-2 py-4">
-          <span className="text-lg font-bold">Gathering Church</span>
-        </NavLink>
-        <nav className="mt-8 flex flex-col items-start gap-4 w-full">
-          <NavLink
-            to="/admin/members"
-            className={({ isActive }) =>
-              `flex items-center gap-2 py-2 px-4 w-full rounded-lg ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
-            <UsersIcon className="h-5 w-5" />
-            <span> Church Members</span>
-          </NavLink>
-          <NavLink
-            to="/admin/offerings"
-            className={({ isActive }) =>
-              `flex items-center gap-2 py-2 px-4 w-full rounded-lg ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
-            <DollarSignIcon className="h-5 w-5" />
-            <span>Offerings</span>
-          </NavLink>
-          <NavLink
-            to="/admin/expenses"
-            className={({ isActive }) =>
-              `flex items-center gap-2 py-2 px-4 w-full rounded-lg ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
-            <ReceiptIcon className="h-5 w-5" />
-            <span>Expenses</span>
-          </NavLink>
-          <NavLink
-            to="/admin/sermons"
-            className={({ isActive }) =>
-              `flex items-center gap-2 py-2 px-4 w-full rounded-lg ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
-            <BookOpenIcon className="h-5 w-5" />
-            <span>Sermons</span>
-          </NavLink>
-          <NavLink
-            to="/admin/events"
-            className={({ isActive }) =>
-              `flex items-center gap-2 py-2 px-4 w-full rounded-lg ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
-            <CalendarIcon className="h-5 w-5" />
-            <span>Events</span>
-          </NavLink>
-        </nav>
-      </div>
-    </div>
+    <Box
+      bg={bg}
+      color={color}
+      w="64"
+      h="full"
+      pt="5"
+      px="3"
+      pos="fixed"
+      top="0"
+      left="0"
+      zIndex="sticky"
+      boxShadow="0 4px 12px 0 rgba(0, 0, 0, 0.05)"
+    >
+      <VStack align="stretch" spacing="1">
+        <Box p="5">
+          <Text fontSize="2xl" fontWeight="bold" color="cyan.500">
+            Gathering Church
+          </Text>
+        </Box>
+        <NavItem icon={FaTachometerAlt} to="/admin">
+          Dashboard
+        </NavItem>
+        <NavItem icon={FaUsers} to="/admin/members">
+          Church Members
+        </NavItem>
+        <NavItem icon={FaMoneyBillWave} to="/admin/offerings">
+          Offerings
+        </NavItem>
+        <NavItem icon={FaReceipt} to="/admin/expenses">
+          Expenses
+        </NavItem>
+        <NavItem icon={FaBook} to="/admin/sermons">
+          Sermons
+        </NavItem>
+        <NavItem icon={FaCalendarAlt} to="/admin/events">
+          Events
+        </NavItem>
+      </VStack>
+    </Box>
   );
 };
 

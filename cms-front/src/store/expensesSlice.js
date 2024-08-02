@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../utils/axiosSetup";
 
 // Fetch expenses from the backend
 export const fetchExpenses = createAsyncThunk(
   "expenses/fetchExpenses",
   async ({ page, limit, startDate, endDate }) => {
-    const response = await axios.get(
-      `http://localhost:5009/api/cms/expense?page=${page}&limit=${limit}&startDate=${startDate}&endDate=${endDate}`
+    const response = await axiosInstance.get(
+      `/cms/expense?page=${page}&limit=${limit}&startDate=${startDate || ''}&endDate=${endDate || ''}`
     );
     console.log("Fetched expenses:", response.data);
     return response.data;
@@ -17,9 +17,7 @@ export const fetchExpenses = createAsyncThunk(
 export const fetchTotalExpenses = createAsyncThunk(
   "expenses/fetchTotalExpenses",
   async () => {
-    const response = await axios.get(
-      "http://localhost:5009/api/cms/total-expenses"
-    );
+    const response = await axiosInstance.get("/cms/total-expenses");
     console.log("Fetched total expenses:", response.data.totalExpenses);
     return response.data.totalExpenses;
   }
@@ -29,10 +27,7 @@ export const fetchTotalExpenses = createAsyncThunk(
 export const addExpense = createAsyncThunk(
   "expenses/addExpense",
   async (expense) => {
-    const response = await axios.post(
-      "http://localhost:5009/api/cms/expense",
-      expense
-    );
+    const response = await axiosInstance.post("/cms/expense", expense);
     console.log("Added expense:", response.data);
     return response.data;
   }
@@ -43,10 +38,7 @@ export const updateExpense = createAsyncThunk(
   "expenses/updateExpense",
   async (expense) => {
     const { id, ...data } = expense;
-    const response = await axios.patch(
-      `http://localhost:5009/api/cms/expense/${id}`,
-      data
-    );
+    const response = await axiosInstance.patch(`/cms/expense/${id}`, data);
     console.log("Updated expense:", response.data);
     return response.data;
   }
@@ -56,7 +48,7 @@ export const updateExpense = createAsyncThunk(
 export const deleteExpense = createAsyncThunk(
   "expenses/deleteExpense",
   async (id) => {
-    await axios.delete(`http://localhost:5009/api/cms/expense/${id}`);
+    await axiosInstance.delete(`/cms/expense/${id}`);
     console.log("Deleted expense:", id);
     return id;
   }
@@ -97,8 +89,8 @@ const expensesSlice = createSlice({
         console.log("Total expenses state updated:", state.totalExpenses);
       })
       .addCase(addExpense.fulfilled, (state, action) => {
-        state.expenses.push(action.payload.expenses);
-        state.totalExpenses = action.payload.totalExpenses;
+        state.expenses.push(action.payload);
+        state.totalExpenses += action.payload.amount;
         console.log("Added expense to state:", state.expenses);
         console.log("Updated total expenses:", state.totalExpenses);
       })

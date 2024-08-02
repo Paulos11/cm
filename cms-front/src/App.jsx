@@ -5,12 +5,12 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import store from "./store/store";
 import PrivateRoute from "./Routes/PrivateRoute";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard";  // Import the new Dashboard component
 import Members from "./pages/Members";
 import Offerings from "./pages/Offerings";
 import Expenses from "./pages/Expenses";
 import Sermons from "./pages/Sermons";
-import SermonDetail from "./pages/SermonDetail ";
+import SermonDetail from "./pages/SermonDetail ";  // Note the space, or remove it if you renamed the file
 import Events from "./pages/Events";
 import Profile from "./pages/Profile";
 import Layout from "./components/Layout";
@@ -33,13 +33,12 @@ const App = () => {
           >
             <Route index element={<Dashboard />} />
             <Route path="members" element={<Members />} />
-            <Route path="Offerings" element={<Offerings />} />
+            <Route path="offerings" element={<Offerings />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="sermons" element={<Sermons />} />
             <Route path="sermons/:id" element={<SermonDetail />} />
             <Route path="events" element={<Events />} />
             <Route path="profile" element={<Profile />} />
-            {/* Add change password route if needed */}
           </Route>
         </Routes>
         <ToastContainer />

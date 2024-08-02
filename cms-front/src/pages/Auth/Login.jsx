@@ -1,41 +1,39 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
-import axios from "axios";
-import { login } from "./../../store/authSlice";
+// src/components/Login.jsx
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import axiosInstance from '../../utils/axiosSetup';
+import { login } from '../../store/authSlice';
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/admin";
+  const from = location.state?.from?.pathname || '/admin';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "/auth/login",
-        { email, password },
-        { withCredentials: true }
+      const response = await axiosInstance.post(
+        '/auth/login',
+        { email, password }
       );
       if (response.status === 200) {
-        const token = response.data.token; // assuming the token is in the response data
+        const token = response.data.token; // Assuming the token is in the response data
         dispatch(login(token));
-        toast.success("Login successful!");
+        toast.success('Login successful!');
         navigate(from, { replace: true });
       } else {
-        toast.error(
-          "Login failed. Please check your credentials and try again."
-        );
+        toast.error('Login failed. Please check your credentials and try again.');
       }
     } catch (error) {
       toast.error(
         `Login failed: ${
           error.response?.data?.message ||
-          "Please check your credentials and try again."
+          'Please check your credentials and try again.'
         }`
       );
     }

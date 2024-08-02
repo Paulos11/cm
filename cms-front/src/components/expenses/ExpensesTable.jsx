@@ -1,5 +1,6 @@
 import React from "react";
-import { FilePenIcon, TrashIcon } from "../ui/icons";
+import { Table, Thead, Tbody, Tr, Th, Td, IconButton, HStack } from "@chakra-ui/react";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 const ExpensesTable = ({ expenses, handleEditClick, handleDeleteClick }) => {
   if (!expenses.length) {
@@ -7,45 +8,44 @@ const ExpensesTable = ({ expenses, handleEditClick, handleDeleteClick }) => {
   }
 
   return (
-    <table className="min-w-full bg-white border-collapse">
-      <thead>
-        <tr>
-          <th className="py-2 px-4 text-left">Category</th>
-          <th className="py-2 px-4 text-left">Amount</th>
-          <th className="py-2 px-4 text-left">Date</th>
-          <th className="py-2 px-4 text-left">Details</th>
-          <th className="py-2 px-4 text-left">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
+    <Table variant="simple">
+      <Thead>
+        <Tr>
+          <Th>Category</Th>
+          <Th>Amount</Th>
+          <Th>Date</Th>
+          <Th>Details</Th>
+          <Th>Actions</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
         {expenses.map((expense) => (
-          <tr key={expense._id} className="border-t hover:bg-gray-50">
-            <td className="py-2 px-4 text-left">{expense.category}</td>
-            <td className="py-2 px-4 text-left">
-              Rs {expense.amount.toFixed(2)}
-            </td>
-            <td className="py-2 px-4 text-left">
-              {new Date(expense.date).toLocaleDateString()}
-            </td>
-            <td className="py-2 px-4 text-left">{expense.details}</td>
-            <td className="py-2 px-4 text-left flex items-center gap-2">
-              <button
-                onClick={() => handleEditClick(expense)}
-                className="text-gray-800 flex items-center"
-              >
-                <FilePenIcon className="ml-2 w-4 h-4 text-xs" />
-              </button>
-              <button
-                onClick={() => handleDeleteClick(expense._id)}
-                className="text-red-600 flex items-center"
-              >
-                <TrashIcon className="w-4 h-4" />
-              </button>
-            </td>
-          </tr>
+          <Tr key={expense._id}>
+            <Td>{expense.category}</Td>
+            <Td>Rs {expense.amount.toFixed(2)}</Td>
+            <Td>{new Date(expense.date).toLocaleDateString()}</Td>
+            <Td>{expense.details}</Td>
+            <Td>
+              <HStack spacing={2}>
+                <IconButton
+                  icon={<FaEdit />}
+                  aria-label="Edit"
+                  size="sm"
+                  onClick={() => handleEditClick(expense)}
+                />
+                <IconButton
+                  icon={<FaTrash />}
+                  aria-label="Delete"
+                  size="sm"
+                  colorScheme="red"
+                  onClick={() => handleDeleteClick(expense._id)}
+                />
+              </HStack>
+            </Td>
+          </Tr>
         ))}
-      </tbody>
-    </table>
+      </Tbody>
+    </Table>
   );
 };
 
